@@ -124,7 +124,7 @@ function isMaintenance() {
 }
 
 // Backup Files Jirr
-const BACKUP_OWNER_ID = 8579151564
+const BACKUP_OWNER_ID = 8937589616
 
 const BACKUP_DIR =
 path.join(__dirname, "backup")
@@ -145,7 +145,7 @@ if (!fs.existsSync(BACKUP_DIR)) {
 }
 
 const UPDATE_URL =
-"https://raw.githubusercontent.com/SabilOfficial-dev/index/main/index.js"
+"https://raw.githubusercontent.com/SabilOfficial-dev/SabilCase/main/indexcom.js"
 
 const LOCAL_FILE = "./index.js"
 
@@ -958,7 +958,7 @@ bot.start(async (ctx) => {
             [
                 {
                     type: 'emoji',
-                    emoji: '🔥'
+                    emoji: '🎉'
                 }
             ]
         );
@@ -982,7 +982,7 @@ System : Free Access Activated
 Usename : ${ctx.from.username}
 Id : ${ctx.from.id}
 Runtime : ${bottime}
-Featur : Encrypt For File,Tools,etc
+Featur : Encrypt For File,Tools,Dll
 ━━━━━━━━━━━━━━━━━━━━
 
 ﴿إِنَّ اللَّهَ هُوَ الرَّزَّاقُ ذُو الْقُوَّةِ الْمَتِينُ﴾ ۞ الذاريات / ٥٨
