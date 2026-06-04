@@ -2041,7 +2041,7 @@ bot.command("broadcast", async (ctx) => {
 
     if (!ctx.message.reply_to_message) {
         return ctx.reply(
-            "Reply pesan / foto / video / dokumen yang ingin dibroadcast lalu ketik /broadcast"
+            "Reply pesan dengan command /broadcast"
         )
     }
 
@@ -2205,11 +2205,8 @@ ${step.text}</pre>
 <blockquote>
 ✅ Berhasil : ${success}
 ❌ Gagal : ${failed}
-👥 Total : ${users.length}
-</blockquote>
-<blockquote>
-Broadcast berhasil dikirim ke seluruh user aktif.
-</blockquote>`,
+👥 Total : ${users.length}</blockquote>
+<blockquote>Broadcast berhasil dikirim ke seluruh user aktif.</blockquote>`,
         {
             parse_mode:
             "HTML"
