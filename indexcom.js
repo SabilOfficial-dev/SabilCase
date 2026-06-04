@@ -775,7 +775,7 @@ async function sendEncryptProgress(ctx, waitMsg, modeName) {
         { percent: 100, text: `✅ File berhasil diencrypt! (${modeName})`, delay: 500 }
     ];
     for (const step of steps) {
-        const barLength = 20;
+        const barLength = 10;
         const filled = Math.round((step.percent / 100) * barLength);
         const bar = '▰'.repeat(filled) + '▱'.repeat(barLength - filled);
         await ctx.telegram.editMessageText(waitMsg.chat.id, waitMsg.message_id, undefined, `<pre>✅ Encrypt Berjalan\n${step.text}\n${bar} ${step.percent}%</pre>`, { parse_mode: 'HTML' });
@@ -1064,9 +1064,11 @@ async function EncV1(ctx, messageId = null) {
 ╠ ▢ /rosemary 𝖴𝗅𝗍𝗋𝖺 𝖣𝖾𝖿𝖾𝗇𝗌𝖾 𝗆𝗈𝖽𝖾
 ╠ ▢ /enctime 𝟥𝟢 (𝟥𝟢 𝗁𝖺𝗋𝗂)
 ╠ ▢ /hardhtml Encrypt Hard Html
-╠═══════════════════════════════════╗
+╠════════════════════════════════════╣
 ║ Cara Penggunaan
-║ /enctime 30 (30 = 30hari) sambil reply file.js
+║ /enctime 30
+║ Jadi setiap angka = 1hari
+║ Jadi kalo 10 = 10hari
 ╚═══════ ೋღ ═══  🌸  ═══ ღೋ ═══════╝</pre>
 `;
     const thumb = await getThumbnailBuffer();
@@ -1105,9 +1107,10 @@ async function EncV2(ctx, messageId = null) {
 ╠ ▢ /nebula 𝖭𝖾𝖻𝗎𝗅𝖺 𝖲𝗍𝗒𝗅𝖾
 ╠ ▢ /var 𝖵𝖺𝗋 𝖲𝗍𝗒𝗅𝖾
 ╠ ▢ /invishtml Encrypt Hmtl
-╠═══════════════════════════════════╗
+╠════════════════════════════════════╣
 ║ Cara Penggunaan
 ║ /enccustom 果Prime皮Sabil出Official去
+║ Jangan ada spasi dalam text
 ╚═══════ ೋღ ═══  🌸  ═══ ღೋ ═══════╝</pre>
 `;
     const thumb = await getThumbnailBuffer();
