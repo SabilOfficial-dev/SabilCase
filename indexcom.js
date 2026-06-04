@@ -499,7 +499,10 @@ bot.telegram.setMyCommands([
     {
         command: 'chatowner',
         description: 'Memberi pesan ke owner'
-    }
+    },
+        command: 'broadcast',
+        description: 'khusus owner'
+    }   
 ])
 .then(() => {
     console.log('Success register cmd')
@@ -683,11 +686,6 @@ const openMenuKeyboard = {
         text: "𝖮𝗐𝗇𝖾𝗋", 
         url: "https://t.me/sabilofficial",
         style: "success" 
-       },
-       {
-        text: "𖥔",
-        callback_data: "owner_menu",
-        style: "danger"
        },
       { 
         text: "𝖭𝖾𝗑𝗍", 
@@ -975,7 +973,7 @@ async function showMenu1(ctx, messageId = null) {
     const caption = `\`\`\`js
 ╔══════✮❁•°♛°•❁✮ ═════╗
     𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐓𝐨   ─  𝐔𝐬𝐞𝐫𝐬
-        𝐁𝐲 : 𝐒𝐚𝐛𝐢𝐥𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥
+       𝐁𝐲 : 𝐒𝐚𝐛𝐢𝐥𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥
 ╚══════✮❁•°❀°•❁✮══════╝
 
 System : Free Access Activated
@@ -1020,14 +1018,14 @@ Sesungguhnya Allah lah Pemberi rezki, Dialah yang mempunyai kekuatan yang kokoh.
 async function showMenu2(ctx, messageId = null) {
     const caption = `<pre>
 ╔═══════ ೋღ 𝖳𝗈𝗈𝗅𝗌 𝖬𝖾𝗇𝗎 ღೋ ═══════╗
-╠ ▢ /cekcode 𝖢𝗁𝖾𝖼𝗄 code
-╠ ▢ /cekerror 𝖢𝗁𝖾𝖼𝗄 𝖾𝗋𝗋𝗈𝗋 𝖿𝗈𝗋 𝖿𝗂𝗅𝖾
-╠ ▢ /infoerror 𝖨𝗇𝖿𝗈 𝖾𝗋𝗋𝗈𝗋 + 𝖺𝗎𝗍𝗈 𝖿𝗂𝖼
-╠ ▢ /cekidemoji 𝖢𝗁𝖾𝖼𝗄 𝗂𝖽 𝖾𝗆𝗈𝗃𝗂 𝗉𝗋𝖾𝗆
-╠ ▢ /fixerror 𝖥𝗂𝗑𝖾𝖽 𝖾𝗋𝗋𝗈𝗋
-╠ ▢ /cleancode 𝖢𝗅𝖾𝖺𝗇 𝖢𝗈𝖽𝖾
-╠ ▢ /ai 𝖢𝗁𝖺𝗍 𝖠𝗂
-╠ ▢ /getsource Get Source Html
+╠ ▢ /cekcode Reply code
+╠ ▢ /cekerror Reply file/code
+╠ ▢ /infoerror Reply File/code
+╠ ▢ /cekidemoji Reply emoji
+╠ ▢ /fixerror Reply file/code
+╠ ▢ /cleancode Reply File/code
+╠ ▢ /ai 𝖢𝗁𝖺𝗍 teks
+╠ ▢ /getsource Link Https
 ╚═══════ ೋღ ══ 🌸 ══ღೋ ═══════╝</pre>
 `;
     const thumb = await getThumbnailBuffer();
@@ -1065,6 +1063,9 @@ async function EncV1(ctx, messageId = null) {
 ╠ ▢ /rosemary 𝖴𝗅𝗍𝗋𝖺 𝖣𝖾𝖿𝖾𝗇𝗌𝖾 𝗆𝗈𝖽𝖾
 ╠ ▢ /enctime 𝟥𝟢 (𝟥𝟢 𝗁𝖺𝗋𝗂)
 ╠ ▢ /hardhtml Encrypt Hard Html
+╠═══════════════════════════════════╗
+║ Cara Penggunaan
+║ /enctime 30 (30 = 30hari) sambil reply file.js
 ╚═══════ ೋღ ═══  🌸  ═══ ღೋ ═══════╝</pre>
 `;
     const thumb = await getThumbnailBuffer();
@@ -1103,6 +1104,9 @@ async function EncV2(ctx, messageId = null) {
 ╠ ▢ /nebula 𝖭𝖾𝖻𝗎𝗅𝖺 𝖲𝗍𝗒𝗅𝖾
 ╠ ▢ /var 𝖵𝖺𝗋 𝖲𝗍𝗒𝗅𝖾
 ╠ ▢ /invishtml Encrypt Hmtl
+╠═══════════════════════════════════╗
+║ Cara Penggunaan
+║ /enccustom 果Prime皮Sabil出Official去
 ╚═══════ ೋღ ═══  🌸  ═══ ღೋ ═══════╝</pre>
 `;
     const thumb = await getThumbnailBuffer();
@@ -1158,59 +1162,6 @@ bot.action('tools_menu', async (ctx) => {
     const messageId = ctx.callbackQuery.message.message_id;
     await showMenu2(ctx, messageId);
     await ctx.answerCbQuery();
-});
-
-bot.action("owner_menu", async (ctx) => {
-
-  // hanya owner
-  if (Number(ctx.from.id) !== config.OWNER_ID) {
-
-    return ctx.answerCbQuery(
-      "✘ 𝖭𝗈 𝖭𝗈 𝖸𝖺𝗄.",
-      {
-        show_alert: true
-      }
-    )
-  }
-
-  await ctx.answerCbQuery()
-
-  const cap =
-`<blockquote>𝖬𝖾𝗇𝗎 𝖪𝗁𝗎𝗌𝗎𝗌 𝖮𝗐𝗇𝖾𝗋
-─────────────────────────
-( ✘ )𝖬𝖾𝗇𝗎 𝖪𝗁𝗎𝗌𝗎𝗌 𝖮𝗐𝗇𝖾𝗋
-
-/broadcast – Reply Text
-/maintenance – on/off|alasan<
-─────────────────────────
-
-𝖠𝖼𝖼𝖾𝗌𝗌 𝖮𝗇𝗅𝗒 𝖮𝗐𝗇𝖾𝗋 𝖨𝖽</blockquote>
-`
-
-  try {
-
-    await ctx.editMessageCaption(
-      cap,
-      {
-        parse_mode: "HTML",
-        reply_markup: OwnKb
-      }
-    )
-
-  } catch {
-
-    try {
-
-      await ctx.editMessageText(
-        cap,
-        {
-          parse_mode: "HTML",
-          reply_markup: OwnKb
-        }
-      )
-
-    } catch {}
-  }
 });
 // ==================== RANDOM ====================
 
@@ -1323,7 +1274,7 @@ function customStyle(code,name){
   const varName=randomName(names)
 
   return `(function(){
-${chaosVars(1200,name)}
+${chaosVars(1200,names)}
 function ${name}(){
 const ${varName}="${b64}";
 return Buffer.from(${varName},"base64").toString();
@@ -2079,12 +2030,14 @@ bot.on("text", async (ctx, next) => {
 bot.command("broadcast", async (ctx) => {
 
     if (ctx.from.id !== config.OWNER_ID) {
-        return ctx.reply("❌ Khusus Owner")
+        return ctx.reply(
+            "❌ Khusus Owner"
+        )
     }
 
     if (!ctx.message.reply_to_message) {
         return ctx.reply(
-            "Reply pesan yang ingin dibroadcast lalu ketik /broadcast"
+            "Reply pesan / foto / video / dokumen yang ingin dibroadcast lalu ketik /broadcast"
         )
     }
 
@@ -2095,14 +2048,20 @@ bot.command("broadcast", async (ctx) => {
     }
 
     const db = JSON.parse(
-        fs.readFileSync(ACCESS_FILE, "utf8")
+        fs.readFileSync(
+            ACCESS_FILE,
+            "utf8"
+        )
     )
 
     const users = Object.keys(
         db.users || {}
     )
     .map(id => Number(id))
-    .filter(id => id !== config.OWNER_ID)
+    .filter(
+        id =>
+        id !== config.OWNER_ID
+    )
 
     if (!users.length) {
         return ctx.reply(
@@ -2113,13 +2072,14 @@ bot.command("broadcast", async (ctx) => {
     const replyMsg =
         ctx.message.reply_to_message
 
-    const waitMsg = await ctx.reply(
-`<pre>▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ 0%</pre>
+    const waitMsg =
+        await ctx.reply(
+`<pre>▱▱▱▱▱▱▱▱▱▱▱ 0%</pre>
 Memulai Broadcast...`,
-        {
-            parse_mode: "HTML"
-        }
-    )
+            {
+                parse_mode: "HTML"
+            }
+        )
 
     const steps = [
         {
@@ -2156,33 +2116,45 @@ Memulai Broadcast...`,
 
     for (const step of steps) {
 
-        const barLength = 20
+        const barLength = 11
 
-        const filled = Math.round(
-            (step.percent / 100) *
-            barLength
-        )
-
-        const bar =
-            "█".repeat(filled) +
-            "▒".repeat(
-                barLength - filled
+        const filled =
+            Math.round(
+                (
+                    step.percent /
+                    100
+                ) *
+                barLength
             )
 
-        await ctx.telegram.editMessageText(
+        const bar =
+            "▰".repeat(
+                filled
+            ) +
+            "▱".repeat(
+                barLength -
+                filled
+            )
+
+        await ctx.telegram
+        .editMessageText(
             waitMsg.chat.id,
             waitMsg.message_id,
             undefined,
 `<pre>${bar} ${step.percent}%
 ${step.text}</pre>
-𝑙𝑜𝑎𝑑𝑖𝑛𝑔...
+⋘ 𝑃𝑙𝑒𝑎𝑠𝑒 𝑤𝑎𝑖𝑡... ⋙
 `,
             {
-                parse_mode: "HTML"
+                parse_mode:
+                "HTML"
             }
-        ).catch(() => {})
+        )
+        .catch(() => {})
 
-        await pause(step.delay)
+        await pause(
+            step.delay
+        )
 
     }
 
@@ -2193,32 +2165,21 @@ ${step.text}</pre>
 
         try {
 
-            if (replyMsg.text) {
-
-                await ctx.telegram.sendMessage(
-                    userId,
-                    `
-<blockquote><b>📢 Broadcast From Owner</b></blockquote>
-<blockquote>${replyMsg.text}</blockquote>
-<blockquote><b>Jika Ada yang ingin di tanyakan ke owner gunakan command /chatowner</b></blockquote>`,
-                    {
-                        parse_mode: "HTML"
-                    }
-                )
-
-            } else {
-
-                await ctx.telegram.copyMessage(
-                    userId,
-                    ctx.chat.id,
-                    replyMsg.message_id
-                )
-
-            }
+            await ctx.telegram
+            .copyMessage(
+                userId,
+                ctx.chat.id,
+                replyMsg.message_id
+            )
 
             success++
 
-        } catch {
+        } catch (err) {
+
+            console.log(
+                `Broadcast gagal ke ${userId}`,
+                err.message
+            )
 
             failed++
 
@@ -2228,20 +2189,26 @@ ${step.text}</pre>
 
     }
 
-    await ctx.telegram.deleteMessage(
+    await ctx.telegram
+    .deleteMessage(
         ctx.chat.id,
         waitMsg.message_id
-    ).catch(() => {})
+    )
+    .catch(() => {})
 
     await ctx.reply(
 `<blockquote>📢 <b>BROADCAST SELESAI</b></blockquote>
 <blockquote>
 ✅ Berhasil : ${success}
 ❌ Gagal : ${failed}
-👥 Total : ${users.length}</blockquote>
-<blockquote>Broadcast berhasil dikirim ke seluruh user aktif.</blockquote>`,
+👥 Total : ${users.length}
+</blockquote>
+<blockquote>
+Broadcast berhasil dikirim ke seluruh user aktif.
+</blockquote>`,
         {
-            parse_mode: "HTML"
+            parse_mode:
+            "HTML"
         }
     )
 
