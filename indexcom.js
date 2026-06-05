@@ -3026,6 +3026,30 @@ Bot akan otomatis mengupdate file dan mengganti dengan yg baru
     }
 
 });
+
+const isAllowed = async (ctx) => {
+  const chatId = ctx.chat.id;
+  const member = await ctx.telegram.getChatMember(chatId, ctx.from.id);
+  return member.status === 'creator' || member.status === 'administrator';
+};
+
+bot.command('tagall', async (ctx) => {
+  if (!(await isAllowed(ctx))) {
+    return ctx.reply('❌ Hanya owner atau admin yang dapat menggunakan perintah ini.');
+  }
+
+  const chatId = ctx.chat.id;
+  // Ambil semua anggota (maks 1000)
+  const members = await ctx.telegram.getChatMembers(chatId, 1000);
+  const mentions = members
+    .map(m => {
+      const u = m.user;
+      return u.username ? `@${u.username}` : `<a href="tg://user?id=${u.id}">${u.first_name}</a>`;
+    })
+    .join(' ');
+
+  await ctx.replyWithHTML(mentions, { disable_web_page_preview: true });
+});
 // kontol up
 // ==================== JALANKAN ====================
 // =============================
