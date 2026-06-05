@@ -586,7 +586,7 @@ Tunggu hingga maintenance selesai.
 //// simpan mapping pesan owner -> user
 const CHAT_SESSION = {}
 const REPLY_MAP = {}
-
+const WAITING_UPDATE_LINK = {}
 
 // ==================== DATABASE AKSES ====================
 const ACCESS_FILE = './akses.json';
@@ -2943,6 +2943,157 @@ ${err.message} `, { parse_mode: "HTML" } )
 )
 
 
+bot.command("setlinkupdate", async (ctx) => {
+
+    if (
+        Number(ctx.from.id) !==
+        Number(config.OWNER_ID)
+    ) {
+
+        return ctx.reply(
+            "<b>❌ Khusus Owner</b>",
+            {
+                parse_mode: "HTML"
+            }
+        )
+
+    }
+
+    WAITING_UPDATE_LINK[
+        ctx.from.id
+    ] = true
+
+    await ctx.reply(
+
+`
+<blockquote><b>Kirim link raw.github untuk update</b></blockquote>
+<blockquote><b>Contoh</b>: <code>https://raw.githubusercontent.com/user/repo/main/index.js</code></blockquote>
+`,
+{
+parse_mode: "HTML"
+}
+)
+
+}
+
+)
+
+bot.on(
+"text",
+async (ctx, next) => {
+
+    const userId =
+        Number(ctx.from.id)
+
+    if (
+        !WAITING_UPDATE_LINK[
+            userId
+        ]
+    ) {
+        return next()
+    }
+
+    const newLink =
+        ctx.message.text.trim()
+
+    if (
+        !newLink.startsWith(
+            "https://raw.githubusercontent.com/"
+        )
+    ) {
+
+        return ctx.reply(
+            "❌ Link raw github tidak valid."
+        )
+
+    }
+
+    delete WAITING_UPDATE_LINK[
+        userId
+    ]
+
+    const processMsg =
+        await ctx.reply(
+            "<blockquote><b>📥 Link Diterima.</b></blockquote>",
+            {
+                parse_mode: "HTML"
+            }
+        )
+
+    try {
+
+        let indexCode =
+            fs.readFileSync(
+                "./index.js",
+                "utf8"
+            )
+
+        indexCode =
+            indexCode.replace(
+                /const\s+UPDATE_URL\s*=\s*["'`].*?["'`]/,
+                `const UPDATE_URL = "${newLink}"`
+            )
+
+        fs.writeFileSync(
+            "./index.js",
+            indexCode,
+            "utf8"
+        )
+
+        await ctx.telegram
+        .deleteMessage(
+            processMsg.chat.id,
+            processMsg.message_id
+        )
+        .catch(() => {})
+
+        const successMsg =
+            await ctx.reply(
+                "<b>✅ Link Berhasil Diubah</b>",
+                {
+                    parse_mode: "HTML"
+                }
+            )
+
+        setTimeout(
+            async () => {
+
+                await ctx.telegram
+                .deleteMessage(
+                    successMsg.chat.id,
+                    successMsg.message_id
+                )
+                .catch(() => {})
+
+            },
+            3000
+        )
+
+    } catch (err) {
+
+        await ctx.telegram
+        .deleteMessage(
+            processMsg.chat.id,
+            processMsg.message_id
+        )
+        .catch(() => {})
+
+        await ctx.reply(
+
+`
+<blockquote><b>❌ Gagal Mengubah Link</b></blockquote>
+<code>${err.message}</code>
+`,
+{
+parse_mode: "HTML"
+}
+)
+
+    }
+
+}
+
+)
 // kontol up
 // ==================== JALANKAN ====================
 // =============================
