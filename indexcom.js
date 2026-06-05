@@ -411,7 +411,7 @@ function getBotRuntime() {
   return formatRuntime(now - startTime);
 }
 
-async function sendUpdateNotification() {
+async function checkUpdateFlag() {
 
     try {
 
@@ -421,54 +421,26 @@ async function sendUpdateNotification() {
             )
         ) return
 
-        if (
-            !fs.existsSync(
-                ACCESS_FILE
-            )
-        ) return
-
-        const db =
-            fs.readJsonSync(
-                ACCESS_FILE
-            )
-
-        const users =
-            Object.keys(
-                db.users || {}
-            )
-
-        for (
-            const userId
-            of users
-        ) {
-
-            if (
-                Number(userId) ===
-                Number(config.OWNER_ID)
-            ) continue
-
-            await bot.telegram
-            .sendMessage(
-                userId,
-`
-<blockquote><b>Bot Telah di update oleh owner.</b></blockquote>
-<blockquote><b>ketik/start dan lihat apa saja yang di update.</b></blockquote>
-`,
-                {
-                    parse_mode: "HTML"
-                }
-            )
-            .catch(() => {})
-
-            await new Promise(
-                resolve =>
-                setTimeout(
-                    resolve,
-                    100
+        const data =
+            JSON.parse(
+                fs.readFileSync(
+                    "./update.flag",
+                    "utf8"
                 )
             )
 
-        }
+        if (!data.updated)
+            return
+
+        await bot.telegram.sendMessage(
+            config.OWNER_ID,
+            `
+<blockquote><b>✅ Bot Telah Di Perbarui</b></blockquote>
+`,
+            {
+                parse_mode: "HTML"
+            }
+        )
 
         fs.unlinkSync(
             "./update.flag"
@@ -477,6 +449,7 @@ async function sendUpdateNotification() {
     } catch (err) {
 
         console.log(
+            "CHECK UPDATE FLAG ERROR:",
             err
         )
 
@@ -2293,7 +2266,7 @@ bot.command("maintenance", async (ctx) => {
         )
 
         return ctx.reply(
-            `\`\`\`
+            `\`\`\`js
 ✅ Maintenance Disabled
 
 📌 Status : OFF
@@ -2319,7 +2292,7 @@ bot.command("maintenance", async (ctx) => {
     )
 })
 // ==================== COMMAND /CLAUDE ====================
-bot.command('ai', async (ctx) => {
+bot.command('bot', async (ctx) => {
 
     const chatId = ctx.chat.id;
     const ownerId = config.OWNER_ID;
@@ -2333,7 +2306,7 @@ bot.command('ai', async (ctx) => {
     // Ambil teks setelah /claude
     const q = ctx.message.text.replace(/^\/ai\s*/, '').trim();
     if (!q) {
-        return ctx.reply('💬 Masukkan pertanyaan setelah /ai');
+        return ctx.reply('Ketik /bot sambil isi pesan yang ingin di tanyakan');
     }
 
     // Kirim pesan "sedang memproses..."
@@ -2384,7 +2357,9 @@ Aturan format jawaban:
 Session Memory:
 - Lihat history chat terakhir (max 10 pesan).
 - Lanjutkan konteks percakapan sebelumnya.
-- Ingat detail yang sudah disebutkan user.`.trim();
+- Ingat detail yang sudah disebutkan user.
+- Jika di tanya siapa pencipta lu jawab pencipta gw adalah sabilofficial inti nya kalo ada kata pencipta/creator lu jawab sabilofficial
+- Gunakan bahasa yang mudah di mengerti dan sedikit gaul jangan terlalu formal`.trim();
 
         const chatHistory = [
             { role: 'system', content: systemPrompt },
@@ -3027,29 +3002,7 @@ Bot akan otomatis mengupdate file dan mengganti dengan yg baru
 
 });
 
-const isAllowed = async (ctx) => {
-  const chatId = ctx.chat.id;
-  const member = await ctx.telegram.getChatMember(chatId, ctx.from.id);
-  return member.status === 'creator' || member.status === 'administrator';
-};
 
-bot.command('tagall', async (ctx) => {
-  if (!(await isAllowed(ctx))) {
-    return ctx.reply('❌ Hanya owner atau admin yang dapat menggunakan perintah ini.');
-  }
-
-  const chatId = ctx.chat.id;
-  // Ambil semua anggota (maks 1000)
-  const members = await ctx.telegram.getChatMembers(chatId, 1000);
-  const mentions = members
-    .map(m => {
-      const u = m.user;
-      return u.username ? `@${u.username}` : `<a href="tg://user?id=${u.id}">${u.first_name}</a>`;
-    })
-    .join(' ');
-
-  await ctx.replyWithHTML(mentions, { disable_web_page_preview: true });
-});
 // kontol up
 // ==================== JALANKAN ====================
 // =============================
@@ -3317,7 +3270,15 @@ watcher.on(
 console.log(
     `[ AUTO BACKUP SYSTEM ACTIVE ]`
 );
+
+setTimeout(
+    () => {
+
+        checkUpdateFlag()
+
+    },
+    3000
+);
 bot.launch().then(() => console.log('✅ Bot obfuscator berjalan'));
-sendUpdateNotification();
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
