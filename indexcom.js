@@ -466,7 +466,7 @@ bot.telegram.setMyCommands([
         description: 'Mulai bot'
     },
     {
-        command: 'bot',
+        command: 'ai',
         description: 'Chat Ai'
     },
     {
@@ -2292,7 +2292,7 @@ bot.command("maintenance", async (ctx) => {
     )
 })
 // ==================== COMMAND /CLAUDE ====================
-bot.command('bot', async (ctx) => {
+bot.command('ai', async (ctx) => {
 
     const chatId = ctx.chat.id;
     const ownerId = config.OWNER_ID;
@@ -2306,7 +2306,7 @@ bot.command('bot', async (ctx) => {
     // Ambil teks setelah /claude
     const q = ctx.message.text.replace(/^\/ai\s*/, '').trim();
     if (!q) {
-        return ctx.reply('Ketik /bot sambil isi pesan yang ingin di tanyakan');
+        return ctx.reply('Ketik /ai sambil isi pesan yang ingin di tanyakan');
     }
 
     // Kirim pesan "sedang memproses..."
@@ -2357,9 +2357,7 @@ Aturan format jawaban:
 Session Memory:
 - Lihat history chat terakhir (max 10 pesan).
 - Lanjutkan konteks percakapan sebelumnya.
-- Ingat detail yang sudah disebutkan user.
-- Jika di tanya siapa pencipta lu jawab pencipta gw adalah sabilofficial, inti nya kalo ada kata pencipta/creator lu jawab sabilofficial.
-- Gunakan bahasa yang mudah di mengerti dan sedikit gaul, jangan terlalu formal.`.trim();
+- Ingat detail yang sudah disebutkan user.`.trim();
 
         const chatHistory = [
             { role: 'system', content: systemPrompt },
