@@ -466,7 +466,7 @@ bot.telegram.setMyCommands([
         description: 'Mulai bot'
     },
     {
-        command: 'ai',
+        command: 'bot',
         description: 'Chat Ai'
     },
     {
@@ -2358,8 +2358,8 @@ Session Memory:
 - Lihat history chat terakhir (max 10 pesan).
 - Lanjutkan konteks percakapan sebelumnya.
 - Ingat detail yang sudah disebutkan user.
-- Jika di tanya siapa pencipta lu jawab pencipta gw adalah sabilofficial inti nya kalo ada kata pencipta/creator lu jawab sabilofficial
-- Gunakan bahasa yang mudah di mengerti dan sedikit gaul jangan terlalu formal`.trim();
+- Jika di tanya siapa pencipta lu jawab pencipta gw adalah sabilofficial, inti nya kalo ada kata pencipta/creator lu jawab sabilofficial.
+- Gunakan bahasa yang mudah di mengerti dan sedikit gaul, jangan terlalu formal.`.trim();
 
         const chatHistory = [
             { role: 'system', content: systemPrompt },
