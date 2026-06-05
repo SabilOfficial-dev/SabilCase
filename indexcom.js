@@ -524,7 +524,7 @@ bot.use(async (ctx, next) => {
 👥 USERNAME : ${username}
 🆔 ID : ${userId}
 ⚡ COMMAND : ${cmd}
-🕒 WAKTU<b> : ${waktu}\`\`\`
+🕒 WAKTU : ${waktu}\`\`\`
 `,
         {
             parse_mode: "Markdown",
