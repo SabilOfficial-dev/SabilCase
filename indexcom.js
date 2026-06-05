@@ -430,16 +430,8 @@ fs.unlinkSync("./update.flag")
 
     console.log(err)
 
+  }
 }
-}
-bot.launch()
-setTimeout( () => {
-checkUpdateFlag()
-
-},
-3000
-)
-
 // ===================== Clear ========\\\
 const bot = new Telegraf(config.BOT_TOKEN);
 // Plugin
