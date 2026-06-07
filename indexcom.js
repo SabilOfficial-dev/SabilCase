@@ -632,12 +632,12 @@ const openMenuKeyboard = {
     inline_keyboard: [
     [
       { 
-        text: "𝖮𝗐𝗇𝖾𝗋", 
+        text: "👑", 
         url: "https://t.me/sabilofficial",
         style: "success" 
        },
       { 
-        text: "⌦", 
+        text: "☛", 
         callback_data: "tools_menu", 
         style: "primary" 
        } 
@@ -649,12 +649,12 @@ const OwnKb = {
     inline_keyboard: [
         [
          { 
-          text: "⌫", 
+          text: "☚", 
           callback_data: "main_menu",
           style: "primary"
          },
          { 
-          text: "⌦", 
+          text: "☛", 
           callback_data: "tools_menu",
           style: "danger"
          }
@@ -666,12 +666,12 @@ const ToolsKeyboard = {
     inline_keyboard: [
         [
          { 
-          text: "⌫", 
+          text: "☚", 
           callback_data: "main_menu",
           style: "primary"
          },
          { 
-          text: "⌦", 
+          text: "☛", 
           callback_data: "enc_menu_v1",
           style: "danger"
          }
@@ -683,12 +683,12 @@ const EncV1Keyboard = {
     inline_keyboard: [
         [
          { 
-          text: "⌫", 
+          text: "☚", 
           callback_data: "tools_menu",
           style: "success"
          },
          { 
-          text: "⌦", 
+          text: "☛", 
           callback_data: "enc_menu_v2",
           style: "primary"
          }
@@ -700,12 +700,12 @@ const EncV2Keyboard = {
     inline_keyboard: [
         [
          { 
-          text: "⌫", 
+          text: "☚", 
           callback_data: "enc_menu_v1",
           style: "danger"
          },
          { 
-          text: "⌦", 
+          text: "☛", 
           callback_data: "main_menu",
           style: "success" 
          }
@@ -919,24 +919,18 @@ bot.start(async (ctx) => {
 // ==================== TAMPILAN MENU ====================
 async function showMenu1(ctx, messageId = null) {
     const bottime = getBotRuntime();
-    const caption = `\`\`\`js
-╔══════✮❁•°♛°•❁✮ ═════╗
-    𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐓𝐨   ─  𝐔𝐬𝐞𝐫𝐬
-       𝐁𝐲 : 𝐒𝐚𝐛𝐢𝐥𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥
-╚══════✮❁•°❀°•❁✮══════╝
-
-System : Free Access Activated
-Usename : ${ctx.from.username}
-Id : ${ctx.from.id}
-Runtime : ${bottime}
-Featur : Encrypt For File,Tools,Dll
-━━━━━━━━━━━━━━━━━━━━
-
-﴿إِنَّ اللَّهَ هُوَ الرَّزَّاقُ ذُو الْقُوَّةِ الْمَتِينُ﴾ ۞ الذاريات / ٥٨
-
-Sesungguhnya Allah lah Pemberi rezki, Dialah yang mempunyai kekuatan yang kokoh.
-
-خداوند خود روزىرسان نيرومند استوار است.\`\`\`
+    const caption = `
+<blockquite><b>━═━═━═━═━𝑊𝑒𝑙𝑐𝑜𝑚𝑒 𝑇𝑜 𝐼𝑛 𝐵𝑜𝑡 𝑂𝑏𝑓𝑢𝑠𝑐𝑎𝑡𝑒𝑑━═━═━═━═━</b></blockquote>
+𝑆𝑖𝑠𝑡𝑒𝑚 : 𝐵𝑒𝑏𝑎𝑠 𝐴𝑘𝑠𝑒𝑠
+𝑅𝑢𝑛𝑡𝑖𝑚𝑒 𝐵𝑜𝑡 : ${bottime}
+𝐹𝑖𝑡𝑢𝑟 : 𝑂𝑏𝑓/𝐸𝑛𝑐𝑟𝑦𝑝𝑡 𝐹𝑖𝑙𝑒,𝐶ℎ𝑎𝑡 𝐴𝑖,𝐶𝑒𝑘 𝑒𝑟𝑟𝑜𝑟/𝐶𝑒𝑘 𝐹𝑢𝑛𝑐,𝐷𝑙𝑙.
+<blockquote><b>━═━═━═━═━Rasulullah ﷺ bersabda━═━═━═━═━</b></blockquote>
+«التاجر الصدوق الأمين مع الأنبياء
+والصديقين والشهداء»
+“Pedagang yang jujur dan amanah akan
+bersama para nabi, orang-orang
+yang benar, dan para syuhada.”
+(HR. Tirmidzi)
 `;
     const thumb = await getThumbnailBuffer();
     if (messageId) {
@@ -946,36 +940,36 @@ Sesungguhnya Allah lah Pemberi rezki, Dialah yang mempunyai kekuatan yang kokoh.
                 type: 'photo',
                 media: { source: thumb },
                 caption,
-                parse_mode: 'Markdown'
+                parse_mode: 'HTML'
             }, { reply_markup: openMenuKeyboard });
         } else {
             await ctx.telegram.editMessageText(ctx.chat.id, messageId, undefined, caption, {
-                parse_mode: 'Markdown',
+                parse_mode: 'HTML',
                 reply_markup: openMenuKeyboard
             });
         }
     } else {
         // Kirim pesan baru
         if (thumb) {
-            await ctx.replyWithPhoto({ source: thumb }, { caption, parse_mode: 'Markdown', reply_markup: openMenuKeyboard });
+            await ctx.replyWithPhoto({ source: thumb }, { caption, parse_mode: 'HTML', reply_markup: openMenuKeyboard });
         } else {
-            await ctx.reply(caption, { parse_mode: 'Markdown', reply_markup: openMenuKeyboard });
+            await ctx.reply(caption, { parse_mode: 'HTML', reply_markup: openMenuKeyboard });
         }
     }
 }
 
 async function showMenu2(ctx, messageId = null) {
-    const caption = `<pre>
-╔═══════ ೋღ 𝖳𝗈𝗈𝗅𝗌 𝖬𝖾𝗇𝗎 ღೋ ═══════╗
-╠ ▢ /cekcode Reply code
-╠ ▢ /cekerror Reply file/code
-╠ ▢ /infoerror Reply File/code
-╠ ▢ /cekidemoji Reply emoji
-╠ ▢ /fixerror Reply file/code
-╠ ▢ /cleancode Reply File/code
-╠ ▢ /ai 𝖢𝗁𝖺𝗍 teks
-╠ ▢ /getsource Link Https
-╚═══════ ೋღ ══ 🌸 ══ღೋ ═══════╝</pre>
+    const caption = `
+<blockquote><b>༺ღ༒ 𝖳𝗈𝗈𝗅𝗌 𝖬𝖾𝗇𝗎 ༒ღ༻</b></blockquote>
+<b>▢ /cekfunc Reply 𝖥𝗎𝗇𝖼</b>
+<b>▢ /cekerror Reply file/code</b>
+<b>▢ /infoerror Reply File/code</b>
+<b>▢ /cekidemoji Reply emoji</b>
+<b>▢ /fixerror Reply file/code</b>
+<b>▢ /cleancode Reply File/code</b>
+<b>▢ /ai 𝖢𝗁𝖺𝗍 teks</b>
+<b>▢ /getsource Link Https</b>
+<blockquote>༺ღ༒༺ღ༒ ༒ღ༻༒ღ༻</blockquote>
 `;
     const thumb = await getThumbnailBuffer();
     if (messageId) {
@@ -1002,22 +996,21 @@ async function showMenu2(ctx, messageId = null) {
 }
 
 async function EncV1(ctx, messageId = null) {
-    const caption = `<pre>
-╔═══════ ೋღ 𝖤𝗇𝖼𝗋𝗒𝗉𝗍 𝖬𝖾𝗇𝗎 𝖵𝟣 ღೋ ═══════╗
-╠ ▢ /artillery Light & Secure 𝗉𝗋𝗈𝗍𝖾𝖼𝗍𝗂𝗈𝗇
-╠ ▢ /hardcode Max Protection mode
-╠ ▢ /phantom Invisible & Strong code
-╠ ▢ /balanced Smart & Stable defense
-╠ ▢ /reversed Rename & Shield system
-╠ ▢ /rosemary 𝖴𝗅𝗍𝗋𝖺 𝖣𝖾𝖿𝖾𝗇𝗌𝖾 𝗆𝗈𝖽𝖾
-╠ ▢ /enctime 𝟥𝟢 (𝟥𝟢 𝗁𝖺𝗋𝗂)
-╠ ▢ /hardhtml Encrypt Hard Html
-╠════════════════════════════════════╣
-║ Cara Penggunaan
-║ /enctime 30
-║ Jadi setiap angka = 1hari
-║ Jadi kalo 10 = 10hari
-╚═══════ ೋღ ═══  🌸  ═══ ღೋ ═══════╝</pre>
+    const caption = `
+<𝖻𝗅𝗈𝖼𝗄𝗊𝗎𝗈𝗍𝖾><𝖻>╾═━═━═━═╼ 𝖤𝗇𝖼 𝖵𝟣 ╾═━═━═━═╼</𝖻></𝖻𝗅𝗈𝖼𝗄𝗊𝗎𝗈𝗍𝖾>
+<b>▢ /artillery Light & Secure 𝗉𝗋𝗈𝗍𝖾𝖼𝗍𝗂𝗈𝗇</b>
+<b>▢ /hardcode Max Protection mode</b>
+<b>▢ /phantom Invisible & Strong code</b>
+<b>▢ /balanced Smart & Stable defense</b>
+<b>▢ /reversed Rename & Shield system</b>
+<b>▢ /rosemary 𝖴𝗅𝗍𝗋𝖺 𝖣𝖾𝖿𝖾𝗇𝗌𝖾 𝗆𝗈𝖽𝖾</b>
+<b>▢ /enctime 𝟥𝟢 (𝟥𝟢 𝗁𝖺𝗋𝗂)</b>
+<b>▢ /hardhtml Encrypt Hard Html</b>
+<blockquot><b>╾═━═━═━═╼ 𝖢𝖺𝗋𝖺 𝖯𝖾𝗇𝗀𝗀𝗎𝗇𝖺𝖺𝗇 ╾═━═━═━═╼</b></blockquote>
+<b>/enctime 30</b>
+<b>Jadi setiap angka = 1hari</b>
+<b>Jadi kalo 10 = 10hari</b>
+<blockquote>╾═━═━═━═━═━═━═━═━═━═━═━═━═━═━═━═━</blockquote>
 `;
     const thumb = await getThumbnailBuffer();
     if (messageId) {
@@ -1044,22 +1037,21 @@ async function EncV1(ctx, messageId = null) {
 }
 
 async function EncV2(ctx, messageId = null) {
-    const caption = `<pre>
-╔═══════ ೋღ 𝖤𝗇𝖼𝗋𝗒𝗉𝗍 𝖬𝖾𝗇𝗎 𝖵𝟤 ღೋ ═══════╗
-╠ ▢ /enccustom 𝖢𝗎𝗌𝗍𝗈𝗆 𝖭𝖺𝗆𝖾
-╠ ▢ /invisenc 𝖨𝗇𝗏𝗂𝗌𝖻𝗅𝖾 𝖧𝖺𝗋𝖽
-╠ ▢ /japanenc 𝖩𝖺𝗉𝖺𝗇𝖾𝗌𝖾 𝖲𝗍𝗒𝗅𝖾
-╠ ▢ /encarab 𝖠𝗋𝖺𝖻 𝖲𝗍𝗒𝗅𝖾
-╠ ▢ /siuenc 𝖲𝗂𝗎 𝖲𝗍𝗒𝗅𝖾
-╠ ▢ /japan 𝖩𝖺𝗉𝖺𝗇 𝖲𝗍𝗒𝗅𝖾
-╠ ▢ /nebula 𝖭𝖾𝖻𝗎𝗅𝖺 𝖲𝗍𝗒𝗅𝖾
-╠ ▢ /var 𝖵𝖺𝗋 𝖲𝗍𝗒𝗅𝖾
-╠ ▢ /invishtml Encrypt Hmtl
-╠════════════════════════════════════╣
-║ Cara Penggunaan
-║ /enccustom 果Prime皮Sabil出Official去
-║ Jangan ada spasi dalam text
-╚═══════ ೋღ ═══  🌸  ═══ ღೋ ═══════╝</pre>
+    const caption = `
+<blockquote><b>╾═━═━═━═╼ 𝖤𝗇𝖼 𝖵𝟤 ╾═━═━═━═╼</b></blockquote>
+<b>▢ /enccustom 𝖢𝗎𝗌𝗍𝗈𝗆 𝖭𝖺𝗆𝖾</b>
+<b>▢ /invisenc 𝖨𝗇𝗏𝗂𝗌𝖻𝗅𝖾 𝖧𝖺𝗋𝖽</b>
+<b>▢ /japanenc 𝖩𝖺𝗉𝖺𝗇𝖾𝗌𝖾 𝖲𝗍𝗒𝗅𝖾</b>
+<b>▢ /encarab 𝖠𝗋𝖺𝖻 𝖲𝗍𝗒𝗅𝖾</b>
+<b>▢ /siuenc 𝖲𝗂𝗎 𝖲𝗍𝗒𝗅𝖾
+<b>▢ /japan 𝖩𝖺𝗉𝖺𝗇 𝖲𝗍𝗒𝗅𝖾</b>
+<b>▢ /nebula 𝖭𝖾𝖻𝗎𝗅𝖺 𝖲𝗍𝗒𝗅𝖾</b>
+<b>▢ /var 𝖵𝖺𝗋 𝖲𝗍𝗒𝗅𝖾</b>
+<b>▢ /invishtml Encrypt Hmtl</b>
+<blockquot><b>╾═━═━═━═╼  𝖢𝖺𝗋𝖺 𝖯𝖾𝗇𝗀𝗀𝗎𝗇𝖺𝖺𝗇 ╾═━═━═━═╼</b></blockquote>
+<b>/enccustom</b> </code>果Prime皮Sabil出Official去</code>
+<b>Jangan ada spasi dalam text</b>
+<blockquote>╾═━═━═━═━═━═━═━═━═━═━═━═━═━═━═━═━</blockquote>
 `;
     const thumb = await getThumbnailBuffer();
     if (messageId) {
