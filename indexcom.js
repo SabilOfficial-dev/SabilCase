@@ -2,6 +2,10 @@ const { Telegraf, session } = require('telegraf');
 const fs = require('fs-extra');
 const path = require('path');
 const mime = require('mime-types');
+const updater = require("./updater");
+const updateLink = require("./updatelink");
+const archiver  = require("archiver");
+const chokidar  = require("chokidar");
 const config = require('./config');
 
 // Inisialisasi bot
@@ -23,6 +27,9 @@ fs.ensureDirSync(storagePath);
 // Buat direktori backup
 const backupPath = path.join(__dirname, 'backup');
 fs.ensureDirSync(backupPath);
+// variable
+const WAITING_UPDATE_LINK = {}
+const UPDATE_FLAG = "./update.flag" // buat update flag biar bisa ke update otomatis
 
 // Database
 const dbPath = path.join(storagePath, 'files.json');
@@ -213,8 +220,8 @@ const addFile = {
     ]
 };
 
-const Cancel = {
-   inline_keyboard: [
+function Cancel() {
+   const buttons = [
        { text: "≪ Back ≫", callback_data: "back_to_menu", style: "danger" }
     ]
  };
@@ -334,6 +341,79 @@ bot.action('save_file', async (ctx) => {
   });
 });
 
+//======== Command /cekupdate dan /setlinkupdate ========\\
+bot.command("cekupdate", async (ctx) => {
+
+        if (
+            Number(ctx.from.id) !==
+            Number(config.OWNER_ID)
+        ) {
+            return
+        }
+
+        await updater.checkUpdate(
+            ctx,
+            bot,
+            config
+        )
+
+    }
+)
+
+
+bot.command("setlinkupdate", async (ctx) => {
+
+    if (
+        Number(ctx.from.id) !==
+        Number(config.OWNER_ID)
+    ) return
+
+    WAITING_UPDATE_LINK[
+        ctx.from.id
+    ] = true
+
+    await ctx.reply(
+        "Kirim link raw.github untuk update"
+    )
+
+})
+
+bot.on(
+    "text",
+    async (ctx, next) => {
+
+        const userId =
+            Number(ctx.from.id)
+
+        if (
+            !WAITING_UPDATE_LINK[
+                userId
+            ]
+        ) {
+            return next()
+        }
+
+        delete WAITING_UPDATE_LINK[
+            userId
+        ]
+
+        const newLink =
+            ctx.message.text.trim()
+
+        await updateLink
+            .setUpdateLink(
+                ctx,
+                newLink
+            )
+
+        await ctx.reply(
+            "✅ Link berhasil diubah"
+        )
+
+    }
+)
+
+
 // ============= HANDLE FILE =============
 bot.on(['document', 'photo', 'video', 'audio'], async (ctx) => {
   if (!ctx.session.waitingFor || ctx.session.waitingFor !== 'file') {
@@ -399,7 +479,7 @@ Ukuran Anda : ${sizeMB}MB</b></blockquote>`;
       await ctx.replyWithPhoto(config.THUMBNAIL_URL, {
         caption: html,
         parse_mode: 'HTML',
-        reply_markup: Cancel
+        reply_markup: Cancel()
       });
       ctx.session.waitingFor = null;
       return;
@@ -416,10 +496,9 @@ Ukuran Anda : ${sizeMB}MB</b></blockquote>`;
     ctx.session.waitingFor = 'name';
     
     const html = `
-<blockquote><b>✏️ Beri nama untuk file ini</b>
+<blockquote><b>✏️ Beri nama untuk file ini</b></blockquote>
 Kirimkan nama
-Contoh : sc enc
-<b>Nama harus unik!</b></blockquote>`;
+Contoh : sc enc`;
 
     await ctx.replyWithPhoto(config.THUMBNAIL_URL, {
       caption: html,
@@ -507,12 +586,12 @@ bot.on('text', async (ctx) => {
 <b>📅 Tanggal:</b> ${fileData.date}
 <b>📂 Kategori:</b> ${fileData.category}
 ${tempFile.caption ? `<b>💬 Deskripsi:</b> ${tempFile.caption}` : ''}
-${backupResult ? `\n💾 Backup: ${backupResult}` : '\n⚠️Backup gagal'}`;
+${backupResult ? `\n💾 Backup: ${backupResult}` : '\n⚠️ Backup gagal'}`;
 
       await ctx.replyWithPhoto(config.THUMBNAIL_URL, {
         caption: caption,
         parse_mode: 'HTML',
-        reply_markup: Cancel
+        reply_markup: Cancel()
       });
       
       ctx.session.waitingFor = null;
@@ -565,7 +644,7 @@ bot.action('list_files', async (ctx) => {
   
   const html = `
 <blockquote><b>📋 Daftar File Anda (${userFiles.length})</b></blockquote>
-<blockquote><b>Klik Button Untuk Mengunduh File : </b></blockquote>`;
+<blockquote><b>Klik Button Untuk Mengunduh File :</b></blockquote>`;
 
   await safeEditCaption(ctx, html, {
     reply_markup: createInlineKeyboard(buttons, isEven)
@@ -715,9 +794,7 @@ bot.action(/delete_yes_(.+)/, async (ctx) => {
     
     await autoBackup(true);
     
-    await backToMenu(ctx, `<b>✅ File berhasil dihapus!</b>
-
-📁 ${file.name} telah dihapus.`);
+    await backToMenu(ctx, true);
     
   } catch (error) {
     console.error('Error:', error);
