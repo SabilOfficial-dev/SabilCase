@@ -278,7 +278,7 @@ async function backToMenu(ctx, silent = false) {
     html = `<blockquote><b>📁 Selamat datang di File Storage Bot!</b></blockquote>
 <blockquote><b>👤 User ID:</b> <code>${userId}</code>
 📁 <b>File Anda:</b> ${userFiles.length} file
-👥 <b>Total Users:</b> ${totalUsers}</b></blockquote>
+👥 <b>Total Users: ${totalUsers}</b></blockquote>
 <blockquote expandable><b>📤 Simpan file dengan nama custom
 📋 Lihat dan unduh file tersimpan
 🗑️ Hapus file yang tidak diperlukan</b></blockquote>
@@ -306,7 +306,7 @@ bot.start(async (ctx) => {
 <blockquote><b>📁 Selamat datang di File Storage Bot!</b></blockquote>
 <blockquote><b>👤 User ID :</b> <code>${userId}</code>
 📁 <b>File Anda :</b> ${userFiles.length} file
-👥 <b>Total Users :</b> ${totalUsers}</b></blockquote>
+👥 <b>Total Users : ${totalUsers}</b></blockquote>
 <blockquote expandable><b>📤 Simpan file dengan nama custom
 📋 Lihat dan unduh file tersimpan
 🗑️ Hapus file yang tidak diperlukan</b></blockquote>
