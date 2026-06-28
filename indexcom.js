@@ -27,9 +27,10 @@ fs.ensureDirSync(storagePath);
 // Buat direktori backup
 const backupPath = path.join(__dirname, 'backup');
 fs.ensureDirSync(backupPath);
-// variable
-const WAITING_UPDATE_LINK = {}
-const UPDATE_FLAG = "./update.flag" // buat update flag biar bisa ke update otomatis
+
+// Variable untuk update
+const WAITING_UPDATE_LINK = {};
+const UPDATE_FLAG = "./update.flag";
 
 // Database
 const dbPath = path.join(storagePath, 'files.json');
@@ -199,32 +200,25 @@ function createInlineKeyboard(buttons, isEven = true) {
 // ============= MENU UTAMA =============
 function getMainMenu() {
   const buttons = [
-    { text: '📤 Simpan File', callback_data: 'save_file', style: 'success' },
-    { text: '📋 List File', callback_data: 'list_files', style: 'success' },
-    { text: '🗑️ Hapus File', callback_data: 'delete_file', style: 'primary' },
-    { text: '📊 Statistik', callback_data: 'stats', style: "primary" }
+    { text: '📤 Simpan File', callback_data: 'save_file' },
+    { text: '📋 List File', callback_data: 'list_files' },
+    { text: '🗑️ Hapus File', callback_data: 'delete_file' },
+    { text: '📊 Statistik', callback_data: 'stats' }
   ];
   
-  // Tambahkan menu backup hanya untuk owner
   if (config.OWNER_ID) {
-    buttons.push({ text: '💾 Backup', callback_data: 'backup_menu', style: "danger" });
+    buttons.push({ text: '💾 Backup', callback_data: 'backup_menu' });
   }
   
   return createInlineKeyboard(buttons, true);
 }
 
-const addFile = {
-  inline_keyboard: [
-      { text: "Save File", callback_data: "save_file", style: "success" },
-      { text: "≪ Back ≫", callback_data: "back_to_menu", style: "danger" }
-    ]
-};
+function getCancelKeyboard() {
+  return createInlineKeyboard([
+    { text: '❌ Batal', callback_data: 'cancel_save' }
+  ], true);
+}
 
-function Cancel() {
-   const buttons = [
-       { text: "≪ Back ≫", callback_data: "back_to_menu", style: "danger" }
-    ]
- };
 // Fungsi untuk edit caption dengan aman
 async function safeEditCaption(ctx, caption, options = {}) {
   try {
@@ -270,8 +264,8 @@ async function safeEditCaption(ctx, caption, options = {}) {
   }
 }
 
-// Fungsi kembali ke menu
-async function backToMenu(ctx, message = '<blockquote><b>📁 Selamat datang di File Storage Bot!</b></blockquote>') {
+// Fungsi kembali ke menu - dengan opsi silent (tanpa pesan)
+async function backToMenu(ctx, silent = false) {
   ctx.session.waitingFor = null;
   ctx.session.tempFile = null;
   
@@ -279,15 +273,20 @@ async function backToMenu(ctx, message = '<blockquote><b>📁 Selamat datang di 
   const userFiles = fileDB.filter(f => f.userId === userId);
   const totalUsers = [...new Set(fileDB.map(f => f.userId))].length;
   
-  const html = `
-${message}
-<blockquote><b>👤 <b>User ID:</b> <code>${userId}</code>
+  let html = '';
+  if (!silent) {
+    html = `<blockquote><b>📁 Selamat datang di File Storage Bot!</b></blockquote>
+<blockquote><b>👤 User ID:</b> <code>${userId}</code>
 📁 <b>File Anda:</b> ${userFiles.length} file
 👥 <b>Total Users:</b> ${totalUsers}</b></blockquote>
 <blockquote expandable><b>📤 Simpan file dengan nama custom
 📋 Lihat dan unduh file tersimpan
 🗑️ Hapus file yang tidak diperlukan</b></blockquote>
 <blockquote><i>Semua file Anda aman dan privat!</i></blockquote>`;
+  } else {
+    // Tampilkan menu tanpa pesan tambahan (hanya judul singkat)
+    html = `<blockquote><b>📁 Menu Utama</b></blockquote>`;
+  }
 
   await safeEditCaption(ctx, html, {
     reply_markup: getMainMenu()
@@ -305,7 +304,7 @@ bot.start(async (ctx) => {
   
   const html = `
 <blockquote><b>📁 Selamat datang di File Storage Bot!</b></blockquote>
-<blockquote><b>👤 <b>User ID :</b> <code>${userId}</code>
+<blockquote><b>👤 User ID :</b> <code>${userId}</code>
 📁 <b>File Anda :</b> ${userFiles.length} file
 👥 <b>Total Users :</b> ${totalUsers}</b></blockquote>
 <blockquote expandable><b>📤 Simpan file dengan nama custom
@@ -332,87 +331,31 @@ bot.action('save_file', async (ctx) => {
 <blockquote><b>Kirim file untuk di save ke database</b>
 <i>Klik Batal untuk membatalkan</i></blockquote>`;
 
-  const cancelButtons = [
-    { text: '❌ Batal', callback_data: 'cancel_save', style: 'danger' }
-  ];
-
   await safeEditCaption(ctx, html, {
-    reply_markup: createInlineKeyboard(cancelButtons, true)
+    reply_markup: getCancelKeyboard()
   });
 });
 
-//======== Command /cekupdate dan /setlinkupdate ========\\
+// ============= COMMAND UPDATE =============
 bot.command("cekupdate", async (ctx) => {
-
-        if (
-            Number(ctx.from.id) !==
-            Number(config.OWNER_ID)
-        ) {
-            return
-        }
-
-        await updater.checkUpdate(
-            ctx,
-            bot,
-            config
-        )
-
-    }
-)
-
+  if (Number(ctx.from.id) !== Number(config.OWNER_ID)) return;
+  await updater.checkUpdate(ctx, bot, config);
+});
 
 bot.command("setlinkupdate", async (ctx) => {
+  if (Number(ctx.from.id) !== Number(config.OWNER_ID)) return;
+  WAITING_UPDATE_LINK[ctx.from.id] = true;
+  await ctx.reply("Kirim link raw.github untuk update");
+});
 
-    if (
-        Number(ctx.from.id) !==
-        Number(config.OWNER_ID)
-    ) return
-
-    WAITING_UPDATE_LINK[
-        ctx.from.id
-    ] = true
-
-    await ctx.reply(
-        "Kirim link raw.github untuk update"
-    )
-
-})
-
-bot.on(
-    "text",
-    async (ctx, next) => {
-
-        const userId =
-            Number(ctx.from.id)
-
-        if (
-            !WAITING_UPDATE_LINK[
-                userId
-            ]
-        ) {
-            return next()
-        }
-
-        delete WAITING_UPDATE_LINK[
-            userId
-        ]
-
-        const newLink =
-            ctx.message.text.trim()
-
-        await updateLink
-            .setUpdateLink(
-                ctx,
-                newLink
-            )
-
-        await ctx.reply(
-            "✅ Link berhasil diubah"
-        )
-
-    }
-)
-
+bot.on("text", async (ctx, next) => {
+  const userId = Number(ctx.from.id);
+  if (!WAITING_UPDATE_LINK[userId]) return next();
+  delete WAITING_UPDATE_LINK[userId];
+  const newLink = ctx.message.text.trim();
+  await updateLink.setUpdateLink(ctx, newLink);
+  await ctx.reply("✅ Link berhasil diubah");
+});
 
 // ============= HANDLE FILE =============
 bot.on(['document', 'photo', 'video', 'audio'], async (ctx) => {
@@ -456,10 +399,7 @@ bot.on(['document', 'photo', 'video', 'audio'], async (ctx) => {
 
     if (!isValidFormat(fileExtension)) {
       const formats = config.ALLOWED_FORMATS.join(', ');
-      const html = `<b>❌ Format tidak didukung!</b>
-
-Format yang didukung:
-${formats}`;
+      const html = `<b>❌ Format tidak didukung!</b>\n\nFormat yang didukung:\n${formats}`;
       await ctx.replyWithPhoto(config.THUMBNAIL_URL, {
         caption: html,
         parse_mode: 'HTML',
@@ -472,14 +412,12 @@ ${formats}`;
     const maxBytes = config.MAX_FILE_SIZE * 1024 * 1024;
     if (fileSize > maxBytes) {
       const sizeMB = (fileSize / (1024 * 1024)).toFixed(1);
-      const html = `
-<blockquote><b>❌ Ukuran terlalu besar!</b></blockquote>
-<blockquote><b>Maksimal : ${config.MAX_FILE_SIZE}MB
-Ukuran Anda : ${sizeMB}MB</b></blockquote>`;
+      const html = `<blockquote><b>❌ Ukuran terlalu besar!</b></blockquote>
+<blockquote><b>Maksimal : ${config.MAX_FILE_SIZE}MB\nUkuran Anda : ${sizeMB}MB</b></blockquote>`;
       await ctx.replyWithPhoto(config.THUMBNAIL_URL, {
         caption: html,
         parse_mode: 'HTML',
-        reply_markup: Cancel()
+        reply_markup: getMainMenu()
       });
       ctx.session.waitingFor = null;
       return;
@@ -503,9 +441,7 @@ Contoh : sc enc`;
     await ctx.replyWithPhoto(config.THUMBNAIL_URL, {
       caption: html,
       parse_mode: 'HTML',
-      reply_markup: createInlineKeyboard([
-        { text: '❌ Batal', callback_data: 'cancel_save' }
-      ], true)
+      reply_markup: getCancelKeyboard()
     });
     
   } catch (error) {
@@ -538,7 +474,6 @@ bot.on('text', async (ctx) => {
     }
     
     const userId = ctx.from.id;
-    // Cek duplikat hanya untuk user yang sama
     const existingFile = fileDB.find(f => f.userId === userId && f.name === fileName);
     
     if (existingFile) {
@@ -563,7 +498,7 @@ bot.on('text', async (ctx) => {
       
       const fileData = {
         id: generateId(),
-        userId: userId, // Simpan userId pemilik
+        userId: userId,
         name: fileName,
         storedName: storedName,
         originalName: tempFile.originalName,
@@ -577,22 +512,11 @@ bot.on('text', async (ctx) => {
       fileDB.push(fileData);
       saveDB();
       
-      const backupResult = await autoBackup(true);
+      // Backup (tetap jalan, tidak tampilkan notifikasi)
+      await autoBackup(true);
       
-      const caption = `
-<blockquote><b>✅ File berhasil disimpan!</b></blockquote>
-<b>📁 Nama:</b> ${fileName}
-<b>📊 Ukuran:</b> ${formatFileSize(tempFile.fileSize)}
-<b>📅 Tanggal:</b> ${fileData.date}
-<b>📂 Kategori:</b> ${fileData.category}
-${tempFile.caption ? `<b>💬 Deskripsi:</b> ${tempFile.caption}` : ''}
-${backupResult ? `\n💾 Backup: ${backupResult}` : '\n⚠️ Backup gagal'}`;
-
-      await ctx.replyWithPhoto(config.THUMBNAIL_URL, {
-        caption: caption,
-        parse_mode: 'HTML',
-        reply_markup: Cancel()
-      });
+      // Langsung kembali ke menu tanpa pesan
+      await backToMenu(ctx, true);
       
       ctx.session.waitingFor = null;
       ctx.session.tempFile = null;
@@ -613,19 +537,18 @@ ${backupResult ? `\n💾 Backup: ${backupResult}` : '\n⚠️ Backup gagal'}`;
 // ============= CANCEL =============
 bot.action('cancel_save', async (ctx) => {
   await ctx.answerCbQuery();
-  await backToMenu(ctx)
+  await backToMenu(ctx, true);
 });
 
-// ============= LIST FILES (Hanya file user sendiri) =============
+// ============= LIST FILES =============
 bot.action('list_files', async (ctx) => {
   await ctx.answerCbQuery();
   
   const userId = ctx.from.id;
-  // Filter hanya file milik user ini
   const userFiles = fileDB.filter(f => f.userId === userId);
   
   if (userFiles.length === 0) {
-    await backToMenu(ctx, '<blockquote><b>📭 Belum ada file tersimpan</b>\nKlik "Simpan File" untuk mulai menyimpan.</blockquote>');
+    await backToMenu(ctx, false); // tampilkan pesan "belum ada file"
     return;
   }
   
@@ -633,12 +556,11 @@ bot.action('list_files', async (ctx) => {
   userFiles.forEach(file => {
     buttons.push({
       text: `📁 ${file.name}`,
-      callback_data: `view_${file.id}`,
-      style: `primary`
+      callback_data: `view_${file.id}`
     });
   });
   
-  buttons.push({ text: '≪ Back ≫', callback_data: 'back_to_menu', style: "danger" });
+  buttons.push({ text: '≪ Back ≫', callback_data: 'back_to_menu' });
   
   const isEven = userFiles.length % 2 === 0;
   
@@ -651,71 +573,55 @@ bot.action('list_files', async (ctx) => {
   });
 });
 
-// ============= VIEW FILE (Cek kepemilikan) =============
+// ============= VIEW FILE =============
 bot.action(/view_(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
   
   const fileId = ctx.match[1];
   const userId = ctx.from.id;
   
-  // Cari file dan pastikan milik user ini
   const file = fileDB.find(f => f.id === fileId && f.userId === userId);
   
   if (!file) {
-    await backToMenu(ctx, '<b>❌ File tidak ditemukan atau bukan milik Anda!</b>\n\nAnda hanya bisa mengakses file sendiri.');
+    await backToMenu(ctx, false);
     return;
   }
   
   const filePath = path.join(storagePath, file.storedName);
   
   if (!fs.existsSync(filePath)) {
-    await backToMenu(ctx, '<b>❌ File tidak ditemukan di storage</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
   try {
-    const caption = `
-<blockquote><b>📄 ${file.name}</b>
-<b>📊 Ukuran:</b> ${formatFileSize(file.size)}
-<b>📅 Tanggal:</b> ${file.date}
-<b>📂 Kategori:</b> ${file.category}
-${file.description ? `<b>💬</b> ${file.description}` : ''}</blockquote>
-<blockquote><i>Klik tombol di bawah untuk aksi:</i></blockquote>`;
-
+    // Kirim file langsung tanpa caption tambahan
     await ctx.replyWithDocument(
       { source: filePath, filename: `${file.name}.${file.extension}` },
       {
-        caption: caption,
-        parse_mode: 'HTML',
-        reply_markup: createInlineKeyboard([
-          { text: '🗑️ Delete File', callback_data: `delete_confirm_${file.id}`, style: 'danger' },
-          { text: '≪ Back List File ≫', callback_data: 'list_files', style: 'danger' },
-          { text: '🏠 Menu Utama', callback_data: 'back_to_merupakan', style: 'success' }
-        ], 2)
+        caption: `<b>📄 ${file.name}</b>\n<b>📊 Ukuran:</b> ${formatFileSize(file.size)}`,
+        parse_mode: 'HTML'
       }
     );
     
+    // Kembali ke menu tanpa pesan
+    await backToMenu(ctx, true);
+    
   } catch (error) {
     console.error('Error:', error);
-    const html = `<b>❌ Error:</b> ${error.message}`;
-    await ctx.replyWithPhoto(config.THUMBNAIL_URL, {
-      caption: html,
-      parse_mode: 'HTML',
-      reply_markup: getMainMenu()
-    });
+    await backToMenu(ctx, false);
   }
 });
 
-// ============= DELETE FILE (Hanya file user sendiri) =============
+// ============= DELETE FILE =============
 bot.action('delete_file', async (ctx) => {
   await ctx.answerCbQuery();
   
   const userId = ctx.from.id;
-  // Filter hanya file milik user ini
   const userFiles = fileDB.filter(f => f.userId === userId);
   
   if (userFiles.length === 0) {
-    await backToMenu(ctx, '<b>📭 Belum ada file untuk dihapus</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -723,12 +629,11 @@ bot.action('delete_file', async (ctx) => {
   userFiles.forEach(file => {
     buttons.push({
       text: `🗑️ ${file.name}`,
-      callback_data: `delete_confirm_${file.id}`,
-      style: 'danger'
+      callback_data: `delete_confirm_${file.id}`
     });
   });
   
-  buttons.push({ text: '≪ Back Menu ≫', callback_data: 'back_to_menu', style: 'primary' });
+  buttons.push({ text: '≪ Back Menu ≫', callback_data: 'back_to_menu' });
   
   const isEven = userFiles.length % 2 === 0;
   
@@ -737,18 +642,17 @@ bot.action('delete_file', async (ctx) => {
   });
 });
 
-// ============= DELETE CONFIRM (Cek kepemilikan) =============
+// ============= DELETE CONFIRM =============
 bot.action(/delete_confirm_(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
   
   const fileId = ctx.match[1];
   const userId = ctx.from.id;
   
-  // Cari file dan pastikan milik user ini
   const file = fileDB.find(f => f.id === fileId && f.userId === userId);
   
   if (!file) {
-    await backToMenu(ctx, '<b>❌ File tidak ditemukan atau bukan milik Anda!</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -760,24 +664,23 @@ bot.action(/delete_confirm_(.+)/, async (ctx) => {
 
   await safeEditCaption(ctx, html, {
     reply_markup: createInlineKeyboard([
-      { text: '✅ Ya, Hapus', callback_data: `delete_yes_${file.id}`, style: 'success' },
-      { text: '❌ Batal', callback_data: `delete_no_${file.id}`, style: 'danger' }
+      { text: '✅ Ya, Hapus', callback_data: `delete_yes_${file.id}` },
+      { text: '❌ Batal', callback_data: `delete_no_${file.id}` }
     ], 2)
   });
 });
 
-// ============= DELETE YES (Cek kepemilikan) =============
+// ============= DELETE YES =============
 bot.action(/delete_yes_(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
   
   const fileId = ctx.match[1];
   const userId = ctx.from.id;
   
-  // Cari file dan pastikan milik user ini
   const fileIndex = fileDB.findIndex(f => f.id === fileId && f.userId === userId);
   
   if (fileIndex === -1) {
-    await backToMenu(ctx, '<b>❌ File tidak ditemukan atau bukan milik Anda!</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -794,30 +697,30 @@ bot.action(/delete_yes_(.+)/, async (ctx) => {
     
     await autoBackup(true);
     
+    // Kembali ke menu tanpa pesan
     await backToMenu(ctx, true);
     
   } catch (error) {
     console.error('Error:', error);
-    await backToMenu(ctx, `<b>❌ Error:</b> ${error.message}`);
+    await backToMenu(ctx, false);
   }
 });
 
 // ============= DELETE NO =============
 bot.action(/delete_no_(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
-  await backToMenu(ctx, '<b>❌ Penghapusan dibatalkan</b>');
+  await backToMenu(ctx, true);
 });
 
-// ============= STATISTICS (Hanya untuk user sendiri) =============
+// ============= STATISTICS =============
 bot.action('stats', async (ctx) => {
   await ctx.answerCbQuery();
   
   const userId = ctx.from.id;
-  // Filter hanya file milik user ini
   const userFiles = fileDB.filter(f => f.userId === userId);
   
   if (userFiles.length === 0) {
-    await backToMenu(ctx, '<b>📭 Belum ada file tersimpan</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -857,17 +760,17 @@ bot.action('stats', async (ctx) => {
 
   await safeEditCaption(ctx, message, {
     reply_markup: createInlineKeyboard([
-      { text: '≪ Back ≫', callback_data: 'back_to_menu', style: 'danger' }
+      { text: '≪ Back ≫', callback_data: 'back_to_menu' }
     ], 1)
   });
 });
 
-// ============= BACKUP MENU (Owner Only) =============
+// ============= BACKUP MENU =============
 bot.action('backup_menu', async (ctx) => {
   await ctx.answerCbQuery();
   
   if (ctx.from.id.toString() !== config.OWNER_ID) {
-    await backToMenu(ctx, '<b>⛔ Akses ditolak!</b>\n\nHanya owner yang bisa mengakses menu ini.');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -878,7 +781,6 @@ bot.action('backup_menu', async (ctx) => {
       .sort()
       .reverse();
     
-    // Total user unik
     const totalUsers = [...new Set(fileDB.map(f => f.userId))].length;
     
     let html = `<b>💾 Manajemen Backup</b>\n\n`;
@@ -903,10 +805,10 @@ bot.action('backup_menu', async (ctx) => {
     html += `\n\n<i>Pilih aksi di bawah:</i>`;
     
     const buttons = [
-      { text: '🔄 Backup Now', callback_data: 'backup_now', style: 'primary' },
-      { text: '📥 Restore Backup', callback_data: 'restore_backup', style: 'primary' },
-      { text: '📤 Kirim Backup', callback_data: 'send_backup', style: 'success' },
-      { text: '🏠 Menu Utama', callback_data: 'back_to_menu', style: 'danger' }
+      { text: '🔄 Backup Now', callback_data: 'backup_now' },
+      { text: '📥 Restore Backup', callback_data: 'restore_backup' },
+      { text: '📤 Kirim Backup', callback_data: 'send_backup' },
+      { text: '🏠 Menu Utama', callback_data: 'back_to_menu' }
     ];
     
     await safeEditCaption(ctx, html, {
@@ -915,7 +817,7 @@ bot.action('backup_menu', async (ctx) => {
     
   } catch (error) {
     console.error('Error:', error);
-    await backToMenu(ctx);
+    await backToMenu(ctx, false);
   }
 });
 
@@ -924,23 +826,13 @@ bot.action('backup_now', async (ctx) => {
   await ctx.answerCbQuery();
   
   if (ctx.from.id.toString() !== config.OWNER_ID) {
-    await backToMenu(ctx, '<b>⛔ Akses ditolak!</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
-  const backupFile = await autoBackup(true);
-  
-  if (backupFile) {
-    await backToMenu(ctx, `<b>✅ Backup berhasil dibuat!</b>
-
-📁 ${backupFile}
-📊 Total: ${fileDB.length} file
-📤 Backup dikirim ke owner
-
-<i>Backup tersimpan di folder backup/</i>`);
-  } else {
-    await backToMenu(ctx, '<b>❌ Backup gagal dibuat!</b>\n\nSilakan cek log untuk detail error.');
-  }
+  await autoBackup(true);
+  // Langsung kembali ke menu tanpa pesan
+  await backToMenu(ctx, true);
 });
 
 // ============= SEND BACKUP =============
@@ -948,7 +840,7 @@ bot.action('send_backup', async (ctx) => {
   await ctx.answerCbQuery();
   
   if (ctx.from.id.toString() !== config.OWNER_ID) {
-    await backToMenu(ctx, '<b>⛔ Akses ditolak!</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -960,7 +852,7 @@ bot.action('send_backup', async (ctx) => {
       .reverse();
     
     if (backupList.length === 0) {
-      await backToMenu(ctx, '<b>❌ Tidak ada backup untuk dikirim</b>');
+      await backToMenu(ctx, false);
       return;
     }
     
@@ -971,9 +863,7 @@ bot.action('send_backup', async (ctx) => {
     
     buttons.push({ text: '🔙 Kembali', callback_data: 'backup_menu' });
     
-    const html = `<b>📤 Pilih backup yang akan dikirim:</b>
-
-<i>Backup akan dikirim ke owner</i>`;
+    const html = `<b>📤 Pilih backup yang akan dikirim:</b>\n\n<i>Backup akan dikirim ke owner</i>`;
 
     await safeEditCaption(ctx, html, {
       reply_markup: createInlineKeyboard(buttons, 1)
@@ -981,7 +871,7 @@ bot.action('send_backup', async (ctx) => {
     
   } catch (error) {
     console.error('Error:', error);
-    await backToMenu(ctx, `<b>❌ Error:</b> ${error.message}`);
+    await backToMenu(ctx, false);
   }
 });
 
@@ -990,7 +880,7 @@ bot.action(/send_backup_file_(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
   
   if (ctx.from.id.toString() !== config.OWNER_ID) {
-    await backToMenu(ctx, '<b>⛔ Akses ditolak!</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -999,20 +889,14 @@ bot.action(/send_backup_file_(.+)/, async (ctx) => {
   
   try {
     if (!fs.existsSync(backupFilePath)) {
-      await backToMenu(ctx, `<b>❌ Backup tidak ditemukan!</b>\n\n${backupFile}`);
+      await backToMenu(ctx, false);
       return;
     }
     
     const stats = await fs.stat(backupFilePath);
     const fileSize = (stats.size / 1024).toFixed(1);
     
-    const caption = `<b>📤 Backup Manual</b>
-
-<b>📁 File:</b> ${backupFile}
-<b>📊 Size:</b> ${fileSize} KB
-<b>📅 Dikirim:</b> ${new Date().toLocaleString('id-ID')}
-
-<i>Backup dari File Storage Bot</i>`;
+    const caption = `<b>📤 Backup Manual</b>\n\n<b>📁 File:</b> ${backupFile}\n<b>📊 Size:</b> ${fileSize} KB\n<b>📅 Dikirim:</b> ${new Date().toLocaleString('id-ID')}\n\n<i>Backup dari File Storage Bot</i>`;
 
     await ctx.replyWithDocument(
       { source: backupFilePath, filename: backupFile },
@@ -1022,14 +906,12 @@ bot.action(/send_backup_file_(.+)/, async (ctx) => {
       }
     );
     
-    await backToMenu(ctx, `<b>✅ Backup berhasil dikirim!</b>
-
-📁 ${backupFile}
-📊 Size: ${fileSize} KB`);
+    // Kembali ke menu setelah kirim backup
+    await backToMenu(ctx, true);
     
   } catch (error) {
     console.error('Error:', error);
-    await backToMenu(ctx, `<b>❌ Error:</b> ${error.message}`);
+    await backToMenu(ctx, false);
   }
 });
 
@@ -1038,7 +920,7 @@ bot.action('restore_backup', async (ctx) => {
   await ctx.answerCbQuery();
   
   if (ctx.from.id.toString() !== config.OWNER_ID) {
-    await backToMenu(ctx, '<b>⛔ Akses ditolak!</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -1050,7 +932,7 @@ bot.action('restore_backup', async (ctx) => {
       .reverse();
     
     if (backupList.length === 0) {
-      await backToMenu(ctx, '<b>❌ Tidak ada backup untuk direstore</b>');
+      await backToMenu(ctx, false);
       return;
     }
     
@@ -1061,10 +943,7 @@ bot.action('restore_backup', async (ctx) => {
     
     buttons.push({ text: '🔙 Kembali', callback_data: 'backup_menu' });
     
-    const html = `<b>📥 Pilih backup untuk direstore:</b>
-
-⚠️ <i>Restore akan mengganti data saat ini!</i>
-<i>Pastikan Anda sudah backup data terbaru.</i>`;
+    const html = `<b>📥 Pilih backup untuk direstore:</b>\n\n⚠️ <i>Restore akan mengganti data saat ini!</i>\n<i>Pastikan Anda sudah backup data terbaru.</i>`;
 
     await safeEditCaption(ctx, html, {
       reply_markup: createInlineKeyboard(buttons, 1)
@@ -1072,7 +951,7 @@ bot.action('restore_backup', async (ctx) => {
     
   } catch (error) {
     console.error('Error:', error);
-    await backToMenu(ctx, `<b>❌ Error:</b> ${error.message}`);
+    await backToMenu(ctx, false);
   }
 });
 
@@ -1081,18 +960,13 @@ bot.action(/restore_(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
   
   if (ctx.from.id.toString() !== config.OWNER_ID) {
-    await backToMenu(ctx, '<b>⛔ Akses ditolak!</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
   const backupFile = ctx.match[1];
   
-  const html = `<b>⚠️ Konfirmasi Restore</b>
-
-Yakin ingin merestore:
-📁 ${backupFile}
-
-<i>Data saat ini akan diganti!</i>`;
+  const html = `<b>⚠️ Konfirmasi Restore</b>\n\nYakin ingin merestore:\n📁 ${backupFile}\n\n<i>Data saat ini akan diganti!</i>`;
 
   await safeEditCaption(ctx, html, {
     reply_markup: createInlineKeyboard([
@@ -1107,7 +981,7 @@ bot.action(/restore_confirm_(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
   
   if (ctx.from.id.toString() !== config.OWNER_ID) {
-    await backToMenu(ctx, '<b>⛔ Akses ditolak!</b>');
+    await backToMenu(ctx, false);
     return;
   }
   
@@ -1117,30 +991,19 @@ bot.action(/restore_confirm_(.+)/, async (ctx) => {
     await autoBackup(true);
     const success = await restoreBackup(backupFile);
     
-    if (success) {
-      await backToMenu(ctx, `<b>✅ Restore berhasil!</b>
-
-📁 ${backupFile}
-📊 Total: ${fileDB.length} file
-
-<i>Data berhasil direstore.</i>`);
-    } else {
-      await backToMenu(ctx, `<b>❌ Restore gagal!</b>
-
-File: ${backupFile}
-
-Silakan cek log untuk detail error.`);
-    }
+    // Kembali ke menu tanpa pesan (baik sukses atau gagal)
+    await backToMenu(ctx, true);
+    
   } catch (error) {
     console.error('Error:', error);
-    await backToMenu(ctx, `<b>❌ Error:</b> ${error.message}`);
+    await backToMenu(ctx, false);
   }
 });
 
 // ============= BACK TO MENU =============
 bot.action('back_to_menu', async (ctx) => {
   await ctx.answerCbQuery();
-  await backToMenu(ctx);
+  await backToMenu(ctx, true);
 });
 
 // ============= HANDLE TEXT =============
