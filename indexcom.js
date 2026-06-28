@@ -200,14 +200,14 @@ function createInlineKeyboard(buttons, isEven = true) {
 // ============= MENU UTAMA =============
 function getMainMenu() {
   const buttons = [
-    { text: '📤 Simpan File', callback_data: 'save_file' },
-    { text: '📋 List File', callback_data: 'list_files' },
-    { text: '🗑️ Hapus File', callback_data: 'delete_file' },
-    { text: '📊 Statistik', callback_data: 'stats' }
+    { text: '📤 Simpan File', callback_data: 'save_file', style: 'success' },
+    { text: '📋 List File', callback_data: 'list_files', style: 'success' },
+    { text: '🗑️ Hapus File', callback_data: 'delete_file', style: 'primary' },
+    { text: '📊 Statistik', callback_data: 'stats', style: 'primary' }
   ];
   
   if (config.OWNER_ID) {
-    buttons.push({ text: '💾 Backup', callback_data: 'backup_menu' });
+    buttons.push({ text: '💾 Backup', callback_data: 'backup_menu', style: 'danger' });
   }
   
   return createInlineKeyboard(buttons, true);
@@ -215,7 +215,7 @@ function getMainMenu() {
 
 function getCancelKeyboard() {
   return createInlineKeyboard([
-    { text: '❌ Batal', callback_data: 'cancel_save' }
+    { text: '</> Back', callback_data: 'cancel_save', style: 'danger' }
   ], true);
 }
 
@@ -285,7 +285,14 @@ async function backToMenu(ctx, silent = false) {
 <blockquote><i>Semua file Anda aman dan privat!</i></blockquote>`;
   } else {
     // Tampilkan menu tanpa pesan tambahan (hanya judul singkat)
-    html = `<blockquote><b>📁 Menu Utama</b></blockquote>`;
+    html = `<blockquote><b>📁 Selamat datang di File Storage Bot!</b></blockquote>
+<blockquote><b>👤 User ID:</b> <code>${userId}</code>
+📁 <b>File Anda:</b> ${userFiles.length} file
+👥 <b>Total Users: ${totalUsers}</b></blockquote>
+<blockquote expandable><b>📤 Simpan file dengan nama custom
+📋 Lihat dan unduh file tersimpan
+🗑️ Hapus file yang tidak diperlukan</b></blockquote>
+<blockquote><i>Semua file Anda aman dan privat!</i></blockquote>`;
   }
 
   await safeEditCaption(ctx, html, {
@@ -560,7 +567,7 @@ bot.action('list_files', async (ctx) => {
     });
   });
   
-  buttons.push({ text: '≪ Back ≫', callback_data: 'back_to_menu' });
+  buttons.push({ text: '≪ Back ≫', callback_data: 'back_to_menu', style: 'primary' });
   
   const isEven = userFiles.length % 2 === 0;
   
@@ -633,7 +640,7 @@ bot.action('delete_file', async (ctx) => {
     });
   });
   
-  buttons.push({ text: '≪ Back Menu ≫', callback_data: 'back_to_menu' });
+  buttons.push({ text: '</> Back', callback_data: 'back_to_menu', style: 'danger' });
   
   const isEven = userFiles.length % 2 === 0;
   
@@ -664,8 +671,8 @@ bot.action(/delete_confirm_(.+)/, async (ctx) => {
 
   await safeEditCaption(ctx, html, {
     reply_markup: createInlineKeyboard([
-      { text: '✅ Ya, Hapus', callback_data: `delete_yes_${file.id}` },
-      { text: '❌ Batal', callback_data: `delete_no_${file.id}` }
+      { text: '☑︎', callback_data: `delete_yes_${file.id}`, style: 'success' },
+      { text: '❌', callback_data: `delete_no_${file.id}`, style: 'danger' }
     ], 2)
   });
 });
@@ -760,7 +767,7 @@ bot.action('stats', async (ctx) => {
 
   await safeEditCaption(ctx, message, {
     reply_markup: createInlineKeyboard([
-      { text: '≪ Back ≫', callback_data: 'back_to_menu' }
+      { text: '</> Back', callback_data: 'back_to_menu' }
     ], 1)
   });
 });
@@ -805,10 +812,10 @@ bot.action('backup_menu', async (ctx) => {
     html += `\n\n<i>Pilih aksi di bawah:</i>`;
     
     const buttons = [
-      { text: '🔄 Backup Now', callback_data: 'backup_now' },
-      { text: '📥 Restore Backup', callback_data: 'restore_backup' },
-      { text: '📤 Kirim Backup', callback_data: 'send_backup' },
-      { text: '🏠 Menu Utama', callback_data: 'back_to_menu' }
+      { text: '🔄 Backup Now', callback_data: 'backup_now', style: 'success' },
+      { text: '📥 Restore Backup', callback_data: 'restore_backup', style: 'success' },
+      { text: '📤 Kirim Backup', callback_data: 'send_backup', style: 'primary' },
+      { text: '🏠 Menu Utama', callback_data: 'back_to_menu', style: 'primary' }
     ];
     
     await safeEditCaption(ctx, html, {
@@ -861,7 +868,7 @@ bot.action('send_backup', async (ctx) => {
       callback_data: `send_backup_file_${file}`
     }));
     
-    buttons.push({ text: '🔙 Kembali', callback_data: 'backup_menu' });
+    buttons.push({ text: '</> Back', callback_data: 'backup_menu' });
     
     const html = `<b>📤 Pilih backup yang akan dikirim:</b>\n\n<i>Backup akan dikirim ke owner</i>`;
 
@@ -941,7 +948,7 @@ bot.action('restore_backup', async (ctx) => {
       callback_data: `restore_${file}`
     }));
     
-    buttons.push({ text: '🔙 Kembali', callback_data: 'backup_menu' });
+    buttons.push({ text: '</> Back', callback_data: 'backup_menu' });
     
     const html = `<b>📥 Pilih backup untuk direstore:</b>\n\n⚠️ <i>Restore akan mengganti data saat ini!</i>\n<i>Pastikan Anda sudah backup data terbaru.</i>`;
 
@@ -970,8 +977,8 @@ bot.action(/restore_(.+)/, async (ctx) => {
 
   await safeEditCaption(ctx, html, {
     reply_markup: createInlineKeyboard([
-      { text: '✅ Ya, Restore', callback_data: `restore_confirm_${backupFile}` },
-      { text: '❌ Batal', callback_data: 'backup_menu' }
+      { text: '☑︎', callback_data: `restore_confirm_${backupFile}`, style: 'primary' },
+      { text: '❌', callback_data: 'backup_menu', style: 'danger' }
     ], 2)
   });
 });
